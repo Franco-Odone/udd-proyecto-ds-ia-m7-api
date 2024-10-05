@@ -8,22 +8,22 @@ from PIL import Image
 from io import BytesIO
 from keras.models import load_model
 
-# Solución: Forzar codificación utf-8 en el entorno Windows
+# Fuerzo codificación utf-8 en el entorno Windows
 if sys.platform == "win32":
     import codecs
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, 'strict')
 
-# Cargar el modelo previamente entrenado
-model_path = './model_weights.h5'  # Ajusta la ruta según sea necesario
+# Cargo el modelo previamente entrenado
+model_path = './model_weights.h5'
 model = load_model(model_path)
 
-# Crear una instancia de la aplicación FastAPI
+# Creo una instancia de la aplicación FastAPI
 app = FastAPI()
 
-# Configurar CORS
+# Configuro CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permitir todas las conexiones; ajusta esto según sea necesario
+    allow_origins=["*"],  # Permito todas las conexiones;
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,37 +31,37 @@ app.add_middleware(
 
 # Función para predecir la imagen
 def predict_image(img):
-    # Redimensionar la imagen
-    img = img.resize((150, 150))  # Ajustar según las dimensiones requeridas por el modelo
-    img_array = np.array(img) / 255.0  # Normalizar la imagen
+    # Redimensiono la imagen
+    img = img.resize((150, 150))
+    img_array = np.array(img) / 255.0  # Normalizo la imagen
 
-    # Verificar y añadir el canal de color si es necesario
+    # Verifico y añado el canal de color (si es necesario)
     if img_array.ndim == 2:  # Imagen en escala de grises
-        img_array = np.stack((img_array,) * 3, axis=-1)  # Convertir a 3 canales
+        img_array = np.stack((img_array,) * 3, axis=-1)  # Convierto a 3 canales
 
-    img_array = np.expand_dims(img_array, axis=0)  # Añadir dimensión para batch size
-    prediction = model.predict(img_array)  # Predicción con el modelo
-    return prediction[0][0]  # Devuelve el valor de predicción
+    img_array = np.expand_dims(img_array, axis=0)  # Añado dimensión para batch size
+    prediction = model.predict(img_array)
+    return prediction[0][0]  # Devuelvo el valor de predicción
 
 # Endpoint para la predicción
 @app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
     try:
-        img = Image.open(BytesIO(await file.read()))  # Abre la imagen desde el archivo subido
+        img = Image.open(BytesIO(await file.read()))  # Abro la imagen desde el archivo subido
         prediction = predict_image(img)
         result = "Pneumonia" if prediction > 0.5 else "Normal"  # 0.5 es el umbral de decisión
 
-        # Calcular el porcentaje de confianza
+        # Calculo el porcentaje de confianza
         confidence = prediction * 100 if prediction > 0.5 else (1 - prediction) * 100
 
         return {
             "prediction": result,
             # "probability": float(prediction),
-            "confidence": f"{confidence:.2f}%"  # Devolver el porcentaje con 2 decimales
+            "confidence": f"{confidence:.2f}%"  # Devuelvo el porcentaje con 2 decimales
         }
 
     except Exception as e:
-        return {"error": str(e)}  # Elimina la codificación manual
+        return {"error": str(e)}
 
 # Página HTML simple para cargar imágenes
 @app.get("/", response_class=HTMLResponse)
