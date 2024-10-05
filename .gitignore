@@ -1,0 +1,12 @@
+# Ignorar el caché de Python
+__pycache__/
+
+# Ignorar archivos de entorno si los tienes
+.env
+.env.*
+
+# Ignorar archivos de compilación de Python
+*.py[cod]
+*.egg-info/
+dist/
+build/
