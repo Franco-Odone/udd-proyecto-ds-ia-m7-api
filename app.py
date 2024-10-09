@@ -14,7 +14,7 @@ if sys.platform == "win32":
     sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, 'strict')
 
 # Cargo el modelo previamente entrenado
-model_path = './model_weights.h5'
+model_path = './best_model_tuned.h5'
 model = load_model(model_path)
 
 # Creo una instancia de la aplicación FastAPI
